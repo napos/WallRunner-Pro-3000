@@ -302,10 +302,11 @@ class GameEngine:
 					self.scorecountup += random.randint(82, 101)
 				lcd.lcd_display_string(str(self.finalscore).center(16), 2)
 				time.sleep(1)
-				if (int(self.finalscore) > int(self.highscores[0][1])): # -------------- borked if ![0][1] --------------
-					time.sleep(0.6)
-					lcd.lcd_display_string("  High  score!  ", 2)
-					sound.sfx(self.soundon, "newhighscore")
+				if (self.highscores):
+					if (int(self.finalscore) > int(self.highscores[0][1])):
+						time.sleep(0.6)
+						lcd.lcd_display_string("  High  score!  ", 2)
+						sound.sfx(self.soundon, "newhighscore")
 				
 				time.sleep(2)
 				if (int(self.finalscore) > 0):
@@ -331,10 +332,11 @@ class GameEngine:
 					self.scorecountup += random.randint(82, 101)
 				lcd.lcd_display_string(str(self.finalscore).center(16), 2)
 				time.sleep(1)
-				if (int(self.finalscore) > int(self.highscores[0][1])):
-					time.sleep(0.6)
-					lcd.lcd_display_string("  High  score!  ", 2)
-					sound.sfx(self.soundon, "newhighscore")
+				if (self.highscores):
+					if (int(self.finalscore) > int(self.highscores[0][1])):
+						time.sleep(0.6)
+						lcd.lcd_display_string("  High  score!  ", 2)
+						sound.sfx(self.soundon, "newhighscore")
 				time.sleep(2)
 				if (int(self.finalscore) > 0):
 					self.score_input(str(self.finalscore))
