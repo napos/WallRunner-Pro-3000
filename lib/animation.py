@@ -193,23 +193,24 @@ class DrawFrames:
 
 	# This one is separate because I couldn't be bothered :D
 	# I'll fix it in post..
-	def game_title(self):
+	def game_title(self, g_set_sounds):
 		"""Draw the game's title animation."""
+		self.soundon = g_set_sounds
 		self.frames = 0
 		lcd.lcd_clear()
 
 		while (self.frames < 16):
 			if (self.frames <= 10):
 				lcd.lcd_display_string(self.title_f[self.frames], 1)
-				sound.sfx(1, "walk")
+				sound.sfx(self.soundon, "walk")
 				time.sleep(0.005)
 			elif (self.frames == 11):
 				time.sleep(0.5)
 				lcd.lcd_display_string(self.title_f[self.frames], 2)
-				sound.sfx(1, "menu_move")
+				sound.sfx(self.soundon, "menu_move")
 				time.sleep(1)
 			elif (self.frames > 11):
 				lcd.lcd_display_string(self.title_f[self.frames], 2)
-				sound.sfx(1, "menu_enter")
+				sound.sfx(self.soundon, "menu_enter")
 				time.sleep(0.5)
 			self.frames += 1

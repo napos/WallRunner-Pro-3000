@@ -46,14 +46,15 @@ class UserInterface:
 #	one day. Also, selecting 'No' and moving back to the parent menu relies on the Quit
 #	option being the last entry in the parent menu, which is not nice at all.
 #
-	def question_yesno(self,question,default_answer,loc_number,mainmenu):
+	def question_yesno(self,question,default_answer,loc_number,mainmenu, g_set_sounds):
 			lcd.lcd_clear()
+			self.soundon = g_set_sounds
 			self.question = question
 			self.default = default_answer
 			self.loc_number = loc_number
 			self.mainmenu = mainmenu
 			self.loc_empty = "   "
-			
+
 			lcd.lcd_display_string(self.question, 1)
 			if (self.default == "No"):
 				lcd.lcd_display_string("  > No    Yes   ", 2)
@@ -65,15 +66,15 @@ class UserInterface:
 			#sleep(0.2) # debounce
 			while True:
 				if (GPIO.input(10) and self.answer_yesno != 0):
-					sound.sfx(1, "menu_move")
+					sound.sfx(self.soundon, "menu_move")
 					lcd.lcd_display_string("  > No    Yes   ", 2)
 					self.answer_yesno = 0
 				elif (GPIO.input(9) and self.answer_yesno != 1):
-					sound.sfx(1, "menu_move")
+					sound.sfx(self.soundon, "menu_move")
 					lcd.lcd_display_string("    No  > Yes   ", 2)
 					self.answer_yesno = 1
 				elif (GPIO.input(11)):
-					sound.sfx(1, "menu_enter")
+					sound.sfx(self.soundon, "menu_enter")
 					if (self.answer_yesno == 0):
 						# This relies on "Quit" being the last item in the parent menu,
 						# which is not that nice. Will fix in post, eh..
@@ -94,7 +95,8 @@ class UserInterface:
 #
 # - View the HIGH SCORES ordered by score.
 #
-	def highscores_view(self):		
+	def highscores_view(self, g_set_sounds):	
+		self.soundon = g_set_sounds	
 		self.highscores_file = shelve.open("data/highscores")
 		self.highscores = sorted(self.highscores_file.values(), key=itemgetter(1), reverse=True)
 		self.highscores_file.close()
@@ -119,15 +121,15 @@ class UserInterface:
 		while True:
 			if (GPIO.input(9) and self.player_nr < len(self.highscores) - 2):
 				time.sleep(0.1)
-				sound.sfx(1, "menu_move")
+				sound.sfx(self.soundon, "menu_move")
 				self.player_nr += 1
 			elif (GPIO.input(10) and self.player_nr > 0):
 				time.sleep(0.1)
-				sound.sfx(1, "menu_move")
+				sound.sfx(self.soundon, "menu_move")
 				self.player_nr -= 1
 			elif (GPIO.input(11)):
 				time.sleep(0.1)
-				sound.sfx(1, "menu_enter")
+				sound.sfx(self.soundon, "menu_enter")
 				return
 
 			lcd.lcd_display_string("#" + str(self.player_nr+1).rjust(2) + str(self.highscores[self.player_nr][0]).rjust(4) + str(self.highscores[self.player_nr][1]).rjust(8), 1)
@@ -137,7 +139,8 @@ class UserInterface:
 #
 # - A simple ABOUT text to display the version and copyright info.
 #
-	def about_view(self):
+	def about_view(self, g_set_sounds):
+		self.soundon = g_set_sounds
 		self.about_txt = [
 					"WallRunner Pro3k",
 					"by  Siim Orasmae",
@@ -157,15 +160,15 @@ class UserInterface:
 			
 			if (GPIO.input(9) and self.txt_nr < len(self.about_txt) - 2):
 				time.sleep(0.1)
-				sound.sfx(1, "menu_move")
+				sound.sfx(self.soundon, "menu_move")
 				self.txt_nr += 1
 			elif (GPIO.input(10) and self.txt_nr > 0):
 				time.sleep(0.1)
-				sound.sfx(1, "menu_move")
+				sound.sfx(self.soundon, "menu_move")
 				self.txt_nr -= 1
 			elif (GPIO.input(11)):
 				time.sleep(0.1)
-				sound.sfx(1, "menu_enter")
+				sound.sfx(self.soundon, "menu_enter")
 				return
 		
 			lcd.lcd_display_string(self.about_txt[self.txt_nr], 1)
@@ -175,9 +178,10 @@ class UserInterface:
 #
 # - The absolutely mandatory SETTINGS menu.
 #
-#	Does stuff.
+#	Displays stuff, saves stuff.
 #
-	def settings_view(self):
+	def settings_view(self, g_set_soundss):
+		self.soundon = g_set_soundss ###########------- FIX ---------------------------------------------------------
 		lcd.lcd_clear()
 
 		# The first entry (eg [0]) in the menu list is always the active selection
@@ -220,7 +224,7 @@ class UserInterface:
 			# press "DOWN" button
 			if (GPIO.input(9) and self.loc_item < len(self.menu_list) - 1):
 				time.sleep(0.1)
-				sound.sfx(1, "menu_move")
+				sound.sfx(self.soundon, "menu_move")
 				if (self.loc_arrowup == self.menu_list[0]):
 					self.loc_arrowup = "   "
 					self.loc_arrowdn = self.menu_list[0]
@@ -232,7 +236,7 @@ class UserInterface:
 			# press "UP" button
 			elif (GPIO.input(10) and self.loc_item > 1):
 				time.sleep(0.1)
-				sound.sfx(1, "menu_move")
+				sound.sfx(self.soundon, "menu_move")
 				if (self.loc_arrowdn == self.menu_list[0]):
 					self.loc_arrowup = self.menu_list[0]
 					self.loc_arrowdn = "   "
@@ -244,7 +248,7 @@ class UserInterface:
 			# press "A" button
 			elif (GPIO.input(11)):
 				time.sleep(0.1)
-				sound.sfx(1, "menu_enter")
+				sound.sfx(self.soundon, "menu_enter")
 				# The last item in the list should always be "Back"!
 				if (self.loc_item == len(self.menu_list) - 1):
 					return
@@ -270,16 +274,18 @@ class UserInterface:
 					elif (self.menu_list[self.loc_item][1] == "YES"):
 						self.settings_file[self.menu_list[self.loc_item][0].strip()] = int(0), int(self.loc_item - 1)
 						
-						#if (menu_list[loc_item][0].strip() == "Sounds"):
-						#	set_sounds = 0
+						#if (self.menu_list[self.loc_item][0].strip() == "Sounds"):
+						#	global g_set_sounds
+						#	g_set_sounds = 0
 							
 						self.menu_list.insert(self.loc_item, (self.menu_list[self.loc_item][0], "NO "))
 						del self.menu_list[self.loc_item + 1]				
 					elif (self.menu_list[self.loc_item][1] == "NO "):
 						self.settings_file[self.menu_list[self.loc_item][0].strip()] = int(1), int(self.loc_item - 1)
 						
-						#if (menu_list[loc_item][0].strip() == "Sounds"):
-						#	set_sounds = 1
+						#if (self.menu_list[self.loc_item][0].strip() == "Sounds"):
+						#	global g_set_sounds
+						#	g_set_sounds = 1
 							
 						self.menu_list.insert(self.loc_item, (self.menu_list[self.loc_item][0], "YES"))
 						del self.menu_list[self.loc_item + 1]

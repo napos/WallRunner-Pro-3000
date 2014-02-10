@@ -11,9 +11,7 @@ actually evil or not, but they'll kill you regardless. That's just the way they 
 
 More info will follow...
 
-### Video
-
-<iframe width="1280" height="720" src="//www.youtube.com/embed/BxakTJtw0Tw?rel=0" frameborder="0" allowfullscreen></iframe>
+### See it in action!
 
 [![A Video!](http://img.youtube.com/vi/BxakTJtw0Tw/0.jpg)](http://www.youtube.com/watch?v=BxakTJtw0Tw)
 

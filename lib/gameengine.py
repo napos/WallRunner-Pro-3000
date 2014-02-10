@@ -39,30 +39,29 @@ lcd = lcddriver.lcd()
 #########################################################################################
 
 class GameEngine:
-	"""What this does"""
-	
-	# def runInParallel(*fns):
-	#   proc = []
-	#   for fn in fns:
-	#     p = Process(target=fn)
-	#     p.start()
-	#     proc.append(p)
-	#   for p in proc:
-	#     p.join()
-	#runInParallel(draw.animation("logo_text"), sound.music(1, "intro"))
-	
-	def run_parallel(self, *function):
-		self.fnc = function
+	"""The thing that makes the world go around."""
+
+#
+# - Make two or more functions run in parallel
+#
+#	IN-DEV! (read: borked)
+#	Will eventually take as many functions as you can throw at it and run them all simultaneously.
+#
+	def run_parallel(self, *functions):
+		self.fnc = functions
 		self.jobs = []
 		for i in self.fnc:
-			print i
+			print i # testing
 			#self.run = Process(target=, args=(fnc[i][1]))
 			#self.append(self.fnc[i][0])
 		for p in self.jobs:
 			p.join()
 
 #
-# SCORE input
+# - SCORE input
+#
+#	This pops up when the player dies. Takes the score as input. Lets the player choose
+#	a name to use in the high scores database and then stuffs the info in there.
 #
 	def score_input(self, score):
 		self.alphabet = ["A","B","C","D","E","F","G","H","I","J","K","L","M","N","O","P","Q","R","S","T","U","V","W","X","Y","Z","0","1","2","3","4","5","6","7","8","9"]
@@ -108,11 +107,17 @@ class GameEngine:
 			lcd.lcd_display_string(" Score: " + str(self.score).center(7), 2)
 			time.sleep(0.1)
 
+#########################################################################################
+
 #
-# Run the game, man!
+# - The actual GAME
 #
-	def run_game(self, character="@", difficulty="hard"):
+#	This is what executes when you run the game. There is a lot of redundant code here,
+#	which I'll certainly clean up at some point. Yep.
+#
+	def run_game(self, g_set_sounds, character="@", difficulty="hard"):
 		lcd.lcd_clear()
+		self.soundon = g_set_sounds
 		
 		time.sleep(0.4)
 		lcd.lcd_display_string("    Level  1    ", 1)
@@ -177,13 +182,6 @@ class GameEngine:
 			self.last_wall_dn += 1
 			if (self.random_row == 1 and self.last_wall_up > random.randint(3, self.rand_wall_interval) and self.last_wall_dn >= 3):
 				self.stage_row_up[16] = "#"
-				#debuggery info
-				#print "-------------------------"
-				#print "nr.    ", self.debug_count
-				#print "random ", self.random_row
-				#print "last up", self.last_wall_up
-				#print "last dn", self.last_wall_dn
-				#self.debug_count += 1
 				self.last_wall_up = 0
 			if (self.random_row == 2 and self.last_wall_dn > random.randint(3, 5) and self.last_wall_up >= 3):
 				self.stage_row_dn[16] = "#"
@@ -240,19 +238,19 @@ class GameEngine:
 				# move the player
 				self.stage_row_up[2] = " "
 				self.stage_row_dn[2] = self.player
-				sound.sfx(1, "walk")
+				sound.sfx(self.soundon, "walk")
 			elif (GPIO.input(10)): #up
 				time.sleep(0.1)
 				# move the player
 				self.stage_row_up[2] = self.player
 				self.stage_row_dn[2] = " "
-				sound.sfx(1, "walk")
+				sound.sfx(self.soundon, "walk")
 			elif (GPIO.input(11)): #a
 				time.sleep(0.1)
 				# Locate player and shoot laser
 				if (self.ammo > 0):
 					self.ammo -= 1
-					sound.sfx(1, "lasershoot")
+					sound.sfx(self.soundon, "lasershoot")
 					if (self.stage_row_up[2] == self.player):
 						self.stage_row_up[3] = "-"
 						self.loc_laser_up = 3
@@ -263,13 +261,13 @@ class GameEngine:
 			# Laser collision detection ----------------------------- a bit borked -----------------------------
 			if (self.loc_laser_up != 16):
 				if (self.stage_row_up[self.loc_laser_up + 1] == "#" and self.loc_laser_up < 15):
-					sound.sfx(1, "laserhit")
+					sound.sfx(self.soundon, "laserhit")
 					self.stage_row_up[self.loc_laser_up + 1] = "*"
 					self.stage_row_up[self.loc_laser_up] = " "
 					self.loc_laser_up = 16
 			elif (self.loc_laser_dn != 16):
 				if (self.stage_row_dn[self.loc_laser_dn + 1] == "#" and self.loc_laser_dn < 15):
-					sound.sfx(1, "laserhit")
+					sound.sfx(self.soundon, "laserhit")
 					self.stage_row_dn[self.loc_laser_dn + 1] = "*"
 					self.stage_row_dn[self.loc_laser_dn] = " "
 					self.loc_laser_dn = 16
@@ -278,17 +276,17 @@ class GameEngine:
 			# Calculate the score based on difficulty, level nr, and random numbers
 			if (self.stage_row_up[2] == self.player and self.stage_row_dn[2] == "#"):
 				self.score += random.randint(14, self.rand_score_max)
-				sound.sfx(1, "menu_enter")
+				sound.sfx(self.soundon, "menu_enter")
 			elif (self.stage_row_dn[2] == self.player and self.stage_row_up[2] == "#"):
 				self.score += random.randint(16, self.rand_score_max)
-				sound.sfx(1, "menu_enter")
+				sound.sfx(self.soundon, "menu_enter")
 
 			# Player collision detection and 'game over'/'high score' handling
 			if (self.stage_row_up[2] == self.player and self.stage_row_up[3] == "#"):
 				self.stage_row_up[2] = "X"
 				lcd.lcd_display_string("".join(self.stage_row_up), 1)
 				lcd.lcd_display_string("".join(self.stage_row_dn), 2)
-				sound.sfx(1, "gameover")
+				sound.sfx(self.soundon, "gameover")
 				time.sleep(1)
 				lcd.lcd_clear()
 				self.finalscore = self.score * random.randint(self.rand_score_multiply_l, self.rand_score_multiply_h)
@@ -307,7 +305,7 @@ class GameEngine:
 				if (int(self.finalscore) > int(self.highscores[0][1])): # -------------- borked if ![0][1] --------------
 					time.sleep(0.6)
 					lcd.lcd_display_string("  High  score!  ", 2)
-					sound.sfx(1, "newhighscore")
+					sound.sfx(self.soundon, "newhighscore")
 				
 				time.sleep(2)
 				if (int(self.finalscore) > 0):
@@ -319,7 +317,7 @@ class GameEngine:
 				self.stage_row_dn[2] = "X"
 				lcd.lcd_display_string("".join(self.stage_row_up), 1)
 				lcd.lcd_display_string("".join(self.stage_row_dn), 2)
-				sound.sfx(1, "gameover")
+				sound.sfx(self.soundon, "gameover")
 				time.sleep(1)
 				self.finalscore = self.score * random.randint(self.rand_score_multiply_l, self.rand_score_multiply_h)
 				lcd.lcd_display_string("   Game Over!   ", 1)
@@ -336,7 +334,7 @@ class GameEngine:
 				if (int(self.finalscore) > int(self.highscores[0][1])):
 					time.sleep(0.6)
 					lcd.lcd_display_string("  High  score!  ", 2)
-					sound.sfx(1, "newhighscore")
+					sound.sfx(self.soundon, "newhighscore")
 				time.sleep(2)
 				if (int(self.finalscore) > 0):
 					self.score_input(str(self.finalscore))
@@ -348,5 +346,5 @@ class GameEngine:
 			lcd.lcd_display_string("".join(self.stage_row_up), 1)
 			lcd.lcd_display_string("".join(self.stage_row_dn), 2)
 			
-			# And end the frame
+			# The sleep time depends on the difficulty setting
 			time.sleep(self.sleeptime)

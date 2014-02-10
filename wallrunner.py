@@ -77,7 +77,7 @@ process.start()
 def loop_sfx():
 	i = 0;
 	while i < 14:
-		sound.sfx(1, "walk")
+		sound.sfx(g_set_sounds, "walk")
 		time.sleep(0.5)
 		i += 1
 
@@ -94,7 +94,7 @@ time.sleep(0.5)
 #engine.run_parallel(('sound.music', '1, "intro"'), ('draw.animation', "logo_text"))
 
 jobs = []
-process = Process(target=sound.music, args=(1, "intro"))
+process = Process(target=sound.music, args=(g_set_sounds, "intro"))
 jobs.append(process)
 process.start()
 
@@ -107,7 +107,7 @@ for p in jobs:
 
 lcd.lcd_clear()
 time.sleep(0.5)
-draw.game_title()
+draw.game_title(g_set_sounds)
 time.sleep(2)
 
 #########################################################################################
@@ -155,17 +155,17 @@ while True:
 		time.sleep(0.2) # debounce
 		sound.sfx(g_set_sounds, "menu_enter")
 		if (loc_number == 1): # new game
-			engine.run_game(g_set_avatar)
+			engine.run_game(g_set_sounds ,g_set_avatar)
 		elif (loc_number == 5): # quit
-			ui.question_yesno("  Really quit?","No",loc_number,mainmenu)
+			ui.question_yesno("  Really quit?","No",loc_number,mainmenu,g_set_sounds)
 		else:
 			try:
 				if (loc_number == 2): # settings
-					ui.settings_view()
+					ui.settings_view(g_set_sounds)
 				elif (loc_number == 3): # high scores
-					ui.highscores_view()
+					ui.highscores_view(g_set_sounds)
 				elif (loc_number == 4): # about
-					ui.about_view()
+					ui.about_view(g_set_sounds)
 			finally:
 				lcd.lcd_display_string(posterity_one, 1) # FIX!
 				lcd.lcd_display_string(posterity_two, 2) #

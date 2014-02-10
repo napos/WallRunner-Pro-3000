@@ -112,7 +112,7 @@ class SoundEngine:
 				
 
 #
-# This thing will play music!
+# This thing will play "music"!
 #
 	def music(self, soundon, track, cycle=60):
 		if (soundon == 1):
@@ -121,7 +121,7 @@ class SoundEngine:
 				self.track_n = [self.D,self.E,self.F,self.B,self.D,self.E, self.F,self.B,self.D,self.E,self.F,self.B, self.A,self.E,self.G,self.A,self.A, self.A,self.F,self.F,self.A,self.A]
 				self.track_t = [0.27]
 				self.track_s = 0.02
-			elif (track == "level1"):
+			elif (track == "level1"): # Nothing here..
 				self.track_n = [self.C,self.D]
 				self.track_t = [0.2,0.2]
 				self.track_s = 0.02
