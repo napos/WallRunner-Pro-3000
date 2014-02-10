@@ -11,6 +11,10 @@ actually evil or not, but they'll kill you regardless. That's just the way they 
 
 More info will follow...
 
+### Video
+
+[![A Video!](http://img.youtube.com/vi/BxakTJtw0Tw/0.jpg)](http://www.youtube.com/watch?v=BxakTJtw0Tw)
+
 #### System requirements:
 
 * A Raspberry Pi
