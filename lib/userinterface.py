@@ -180,8 +180,8 @@ class UserInterface:
 #
 #	Displays stuff, saves stuff.
 #
-	def settings_view(self, g_set_soundss):
-		self.soundon = g_set_soundss ###########------- FIX ---------------------------------------------------------
+	def settings_view(self, g_set_sounds):
+		self.soundon = g_set_sounds
 		lcd.lcd_clear()
 
 		# The first entry (eg [0]) in the menu list is always the active selection

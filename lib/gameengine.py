@@ -67,11 +67,11 @@ class GameEngine:
 		self.alphabet = ["A","B","C","D","E","F","G","H","I","J","K","L","M","N","O","P","Q","R","S","T","U","V","W","X","Y","Z","0","1","2","3","4","5","6","7","8","9"]
 		self.name = ["A","A","A"]
 		self.score = score
-		
+
 		self.count_a = 0
 		self.count_n = 0
 		self.blink = 0
-		
+
 		while True:
 			if (self.blink == 1):
 				self.name[self.count_n] = " "
@@ -79,14 +79,14 @@ class GameEngine:
 			else:
 				self.name[self.count_n] = self.alphabet[self.count_a]
 				self.blink = 1
-		
+
 			if (GPIO.input(9)):
 				self.name[self.count_n] = self.alphabet[self.count_a + 1]
 				self.count_a += 1
 			elif (GPIO.input(10)):
 				self.name[self.count_n] = self.alphabet[self.count_a - 1]
 				self.count_a -= 1
-			
+
 			if (GPIO.input(11) and self.count_n < 2):
 				self.name[self.count_n] = self.alphabet[self.count_a]
 				self.count_n += 1
@@ -97,12 +97,12 @@ class GameEngine:
 				self.uid = "id" + str(random.randint(1, 99999999))
 				self.highscore_file[self.uid] = str("".join(self.name)), int(self.score)
 				self.highscore_file.close()
-				
-				lcd.lcd_display_string("  Thank you     ", 1)
+
+				lcd.lcd_display_string(" Thank you      ", 1)
 				lcd.lcd_display_string("   for playing! ", 2)
 				time.sleep(2)
 				break
-			
+
 			lcd.lcd_display_string("  Name:   " + "".join(self.name), 1)
 			lcd.lcd_display_string(" Score: " + str(self.score).center(7), 2)
 			time.sleep(0.1)
@@ -114,22 +114,23 @@ class GameEngine:
 #
 #	This is what executes when you run the game. There is a lot of redundant code here,
 #	which I'll certainly clean up at some point. Yep.
+#	This is also the only place where you can change the difficulty at the moment.
 #
 	def run_game(self, g_set_sounds, character="@", difficulty="hard"):
 		lcd.lcd_clear()
 		self.soundon = g_set_sounds
-		
+
 		time.sleep(0.4)
-		lcd.lcd_display_string("    Level  1    ", 1)
+		lcd.lcd_display_string("    Level  1    ", 1) # The never-ending level :D
 		time.sleep(0.8)
 		lcd.lcd_display_string("     Start!     ", 2)
 		time.sleep(0.5)
-		
+
 		self.player = character
 		self.difficulty = difficulty
 		self.stage_row_up = [" ", " ", self.player, " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", "E"]
 		self.stage_row_dn = [" ", " ", " ",         " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", " ", "E"]
-		
+
 		self.score = 0
 
 		# Some initial setup
@@ -169,10 +170,10 @@ class GameEngine:
 		# Debug settings
 		self.debug = 0
 		self.debug_count = 1
-		
+
 		# Start the game!
 		while True:
-			
+
 			# Each frame needs a random number for wall generation
 			self.random_row = random.randint(1, self.rand_wall_max)
 			#self.random_wall = random.randint(1, 3)
@@ -214,7 +215,7 @@ class GameEngine:
 							self.stage_row_dn[self.count_dn] = " "
 							self.stage_row_dn[self.count_dn - 1] = "#"
 					self.count_dn += 1
-				
+
  			# See if the laser has been fired and move the beam
  			if (self.stage_row_up[self.loc_laser_up] == "-" and self.loc_laser_up < 16):
  				self.stage_row_up[self.loc_laser_up] = " "
@@ -257,7 +258,7 @@ class GameEngine:
 					if (self.stage_row_dn[2] == self.player):
 						self.stage_row_dn[3] = "-"
 						self.loc_laser_dn = 3
-			
+
 			# Laser collision detection ----------------------------- a bit borked -----------------------------
 			if (self.loc_laser_up != 16):
 				if (self.stage_row_up[self.loc_laser_up + 1] == "#" and self.loc_laser_up < 15):
@@ -271,8 +272,8 @@ class GameEngine:
 					self.stage_row_dn[self.loc_laser_dn + 1] = "*"
 					self.stage_row_dn[self.loc_laser_dn] = " "
 					self.loc_laser_dn = 16
-				
-			
+
+
 			# Calculate the score based on difficulty, level nr, and random numbers
 			if (self.stage_row_up[2] == self.player and self.stage_row_dn[2] == "#"):
 				self.score += random.randint(14, self.rand_score_max)
@@ -291,7 +292,7 @@ class GameEngine:
 				lcd.lcd_clear()
 				self.finalscore = self.score * random.randint(self.rand_score_multiply_l, self.rand_score_multiply_h)
 				lcd.lcd_display_string("   Game Over!   ", 1)
-				
+
 				# Is there a new high score?
 				self.highscores_file = shelve.open("data/highscores")
 				self.highscores = sorted(self.highscores_file.values(), key=itemgetter(1), reverse=True)
@@ -307,7 +308,7 @@ class GameEngine:
 						time.sleep(0.6)
 						lcd.lcd_display_string("  High  score!  ", 2)
 						sound.sfx(self.soundon, "newhighscore")
-				
+
 				time.sleep(2)
 				if (int(self.finalscore) > 0):
 					self.score_input(str(self.finalscore))
@@ -347,6 +348,6 @@ class GameEngine:
 			# Draw the frame
 			lcd.lcd_display_string("".join(self.stage_row_up), 1)
 			lcd.lcd_display_string("".join(self.stage_row_dn), 2)
-			
+
 			# The sleep time depends on the difficulty setting
 			time.sleep(self.sleeptime)
