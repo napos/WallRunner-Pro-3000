@@ -52,7 +52,9 @@ engine = lib.gameengine.GameEngine()
 
 #########################################################################################
 
+#
 # Read settings
+#
 settings_file = shelve.open("data/settings")
 for values in sorted(settings_file.items(), key=itemgetter(0)):
 	if (values[0] == "Sounds"):
@@ -68,7 +70,10 @@ for values in sorted(settings_file.items(), key=itemgetter(0)):
 			g_set_avatar = "&"
 settings_file.close()
 
-# Let's start with some animations
+#
+# Start with some animations.
+# They are run in parallel with the corresponding sfx/music.
+#
 jobs = []
 process = Process(target=draw.animation, args=("logo_walk",))
 jobs.append(process)
@@ -90,9 +95,6 @@ for p in jobs:
 
 time.sleep(0.5)
 
-# TEST
-#engine.run_parallel(('sound.music', '1, "intro"'), ('draw.animation', "logo_text"))
-
 jobs = []
 process = Process(target=sound.music, args=(g_set_sounds, "intro"))
 jobs.append(process)
@@ -112,7 +114,9 @@ time.sleep(2)
 
 #########################################################################################
 
-# Then display the menu
+#
+# - Then display the MAIN MENU
+#
 mainmenu = [
 				"  >",
 				" New Game    ",
@@ -122,55 +126,57 @@ mainmenu = [
 				" Quit        "
 				]
 
-loc_menu = "mainmenu"
 loc_number = 1
-loc_empty = "   "
-lcd.lcd_display_string(mainmenu[0] + mainmenu[loc_number], 1)
-lcd.lcd_display_string(loc_empty + mainmenu[loc_number+1], 2)
+loc_disp = 1
+loc_arrowup = mainmenu[0]
+loc_arrowdn = "   "
+
 while True:
 
-	if (GPIO.input(9) and loc_number < 4 and loc_number == 1): # press button DOWN
-		loc_number += 1
-		lcd.lcd_display_string(loc_empty + mainmenu[loc_number-1], 1)
-		lcd.lcd_display_string(mainmenu[0] + mainmenu[loc_number], 2)
+	# press "DOWN" button
+	if (GPIO.input(9) and loc_number < len(mainmenu) - 1):
+		time.sleep(0.1) # debounce
 		sound.sfx(g_set_sounds, "menu_move")
-		posterity_one = str(loc_empty + mainmenu[loc_number-1]) # FIX!
-		posterity_two = str(mainmenu[0] + mainmenu[loc_number]) #
-	elif (GPIO.input(9) and loc_number <= 4): # press button DOWN
-		loc_number += 1
-		lcd.lcd_display_string(loc_empty + mainmenu[loc_number-1], 1)
-		lcd.lcd_display_string(mainmenu[0] + mainmenu[loc_number], 2)
-		sound.sfx(g_set_sounds, "menu_move")
-		posterity_one = str(loc_empty + mainmenu[loc_number-1]) # FIX!
-		posterity_two = str(mainmenu[0] + mainmenu[loc_number]) #
-	elif (GPIO.input(10) == 1 and loc_number > 1): # press button UP
-		loc_number -= 1
-		lcd.lcd_display_string(mainmenu[0] + mainmenu[loc_number], 1)
-		lcd.lcd_display_string(loc_empty + mainmenu[loc_number+1], 2)
-		sound.sfx(g_set_sounds, "menu_move")
-		posterity_one = str(mainmenu[0] + mainmenu[loc_number]) # FIX!
-		posterity_two = str(loc_empty + mainmenu[loc_number+1]) #
+		if (loc_arrowup == mainmenu[0]):
+			loc_arrowup = "   "
+			loc_arrowdn = mainmenu[0]
+			loc_number += 1
+		else:
+			loc_disp += 1
+			loc_number += 1
 
-	if (GPIO.input(11)): # press button A
+	# press "UP" button
+	elif (GPIO.input(10) and loc_number > 1):
+		time.sleep(0.1) # debounce
+		sound.sfx(g_set_sounds, "menu_move")
+		if (loc_arrowdn == mainmenu[0]):
+			loc_arrowup = mainmenu[0]
+			loc_arrowdn = "   "
+			loc_number -= 1
+		else:
+			loc_disp -= 1
+			loc_number -= 1
+
+	# press "A" button
+	if (GPIO.input(11)):
 		time.sleep(0.2) # debounce
 		sound.sfx(g_set_sounds, "menu_enter")
+
+		# The menu items have to be in the correct order for this to work.
 		if (loc_number == 1): # new game
-			engine.run_game(g_set_sounds ,g_set_avatar)
+			engine.run_game(g_set_sounds, g_set_avatar)
 		elif (loc_number == 5): # quit
 			ui.question_yesno("  Really quit?","No",loc_number,mainmenu,g_set_sounds)
 		else:
-			try:
-				if (loc_number == 2): # settings
-					ui.settings_view(g_set_sounds)
-				elif (loc_number == 3): # high scores
-					ui.highscores_view(g_set_sounds)
-				elif (loc_number == 4): # about
-					ui.about_view(g_set_sounds)
-			finally:
-				lcd.lcd_display_string(posterity_one, 1) # FIX!
-				lcd.lcd_display_string(posterity_two, 2) #
+			if (loc_number == 2): # settings
+				ui.settings_view(g_set_sounds)
+			elif (loc_number == 3): # high scores
+				ui.highscores_view(g_set_sounds)
+			elif (loc_number == 4): # about
+				ui.about_view(g_set_sounds)
 
-	time.sleep(0.1)
+	lcd.lcd_display_string(loc_arrowup + str(mainmenu[loc_disp]), 1)
+	lcd.lcd_display_string(loc_arrowdn + str(mainmenu[loc_disp+1]), 2)
 
 #########################################################################################
 
