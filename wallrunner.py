@@ -3,7 +3,7 @@
 
 #
 # WallRunner Pro 3000
-# VERSION: 1.0
+# VERSION: 1.1
 # FILE: wallrunner.py
 #
 # Copyright 2014 Siim Orasmäe

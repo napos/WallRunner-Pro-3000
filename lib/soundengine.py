@@ -2,7 +2,7 @@
 
 #
 # WallRunner Pro 3000
-# VERSION: 1.0
+# VERSION: 1.1
 # FILE: lib/soundengine.py
 #
 # Copyright 2014 Siim Orasmae
@@ -108,6 +108,13 @@ class SoundEngine:
 				time.sleep(0.1)
 				self.play.ChangeFrequency(100)
 				time.sleep(0.2)
+				self.play.stop()
+			if (effect == "pickup"):
+				self.play.start(40)
+				self.play.ChangeFrequency(1000)
+				time.sleep(0.1)
+				self.play.ChangeFrequency(1200)
+				time.sleep(0.05)
 				self.play.stop()
 				
 

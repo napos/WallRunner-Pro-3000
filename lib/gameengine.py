@@ -3,7 +3,7 @@
 
 #
 # WallRunner Pro 3000
-# VERSION: 1.0
+# VERSION: 1.1
 # FILE: lib/gameengine.py
 #
 # Copyright 2014 Siim Orasmäe
@@ -116,7 +116,7 @@ class GameEngine:
 #	which I'll certainly clean up at some point. Yep.
 #	This is also the only place where you can change the difficulty at the moment.
 #
-	def run_game(self, g_set_sounds, character="@", difficulty="hard"):
+	def run_game(self, g_set_sounds, character="@", difficulty="impossible"):
 		lcd.lcd_clear()
 		self.soundon = g_set_sounds
 
@@ -144,6 +144,7 @@ class GameEngine:
 		# Difficulty settings
 		if (self.difficulty == "easy"):
 			self.ammo = 3
+			self.ammo_rmax = 6
 			self.sleeptime = 0.2
 			self.rand_wall_max = 8
 			self.rand_wall_interval = 5
@@ -152,6 +153,7 @@ class GameEngine:
 			self.rand_score_multiply_h = 9
 		elif (self.difficulty == "medium"):
 			self.ammo = 2
+			self.ammo_rmax = 10
 			self.sleeptime = 0.1
 			self.rand_wall_max = 6
 			self.rand_wall_interval = 4
@@ -160,12 +162,23 @@ class GameEngine:
 			self.rand_score_multiply_h = 12
 		elif (self.difficulty == "hard"):
 			self.ammo = 1
+			self.ammo_rmax = 20
 			self.sleeptime = 0
 			self.rand_wall_max = 4
 			self.rand_wall_interval = 3
 			self.rand_score_max = 32
 			self.rand_score_multiply_l = 11
 			self.rand_score_multiply_h = 16
+		elif (self.difficulty == "impossible"):
+			# The walls will eventually take over
+			self.ammo = 3
+			self.ammo_rmax = 5
+			self.sleeptime = 0.05
+			self.rand_wall_max = 4
+			self.rand_wall_interval = 3
+			self.rand_score_max = 36
+			self.rand_score_multiply_l = 16
+			self.rand_score_multiply_h = 18
 
 		# Debug settings
 		self.debug = 0
@@ -176,28 +189,37 @@ class GameEngine:
 
 			# Each frame needs a random number for wall generation
 			self.random_row = random.randint(1, self.rand_wall_max)
-			#self.random_wall = random.randint(1, 3)
+			self.random_ammo = random.randint(1, self.ammo_rmax)
 
 			# Make walls happen based on random nr, distance from last wall on same row and opposite row as well
 			self.last_wall_up += 1
 			self.last_wall_dn += 1
 			if (self.random_row == 1 and self.last_wall_up > random.randint(3, self.rand_wall_interval) and self.last_wall_dn >= 3):
-				self.stage_row_up[16] = "#"
-				self.last_wall_up = 0
+				if (self.random_ammo != 1):
+					self.stage_row_up[16] = "#"
+					self.last_wall_up = 0
+				else:
+					self.stage_row_up[16] = "+"
 			if (self.random_row == 2 and self.last_wall_dn > random.randint(3, 5) and self.last_wall_up >= 3):
-				self.stage_row_dn[16] = "#"
-				self.last_wall_dn = 0
+				if (self.random_ammo != 1):
+					self.stage_row_dn[16] = "#"
+					self.last_wall_dn = 0
+				else:
+					self.stage_row_dn[16] = "+"
 
 			# Move the walls one tile to the left with each passing frame.
 			# If at 0, delete the wall. Also delete any explosions.
 			self.count_up = 0
 			while (self.count_up <= 16):
 				for value in self.stage_row_up:
-					if (value == "#" or value == "*"):
-						if (self.count_up == 0):
+					if (value == "#" or value == "*" or value == "+"):
+						if (self.count_up == 0 and self.difficulty != "impossible"):
 							self.stage_row_up[self.count_up] = " " # DEL WALL IF AT LOC 0
 						elif (self.stage_row_up[self.count_up] == "*"):
 							self.stage_row_up[self.count_up] = " "
+						elif (value == "+"):
+							self.stage_row_up[self.count_up] = " "
+							self.stage_row_up[self.count_up - 1] = "+"
 						else:
 							self.stage_row_up[self.count_up] = " "
 							self.stage_row_up[self.count_up - 1] = "#"
@@ -206,11 +228,14 @@ class GameEngine:
 			self.count_dn = 0
 			while (self.count_dn <= 16):
 				for value in self.stage_row_dn:
-					if (value == "#" or value == "*"):
-						if (self.count_dn == 0):
+					if (value == "#" or value == "*" or value == "+"):
+						if (self.count_dn == 0 and self.difficulty != "impossible"):
 							self.stage_row_dn[self.count_dn] = " "
 						elif (self.stage_row_dn[self.count_dn] == "*"):
 							self.stage_row_dn[self.count_dn] = " "
+						elif (value == "+"):
+							self.stage_row_dn[self.count_dn] = " "
+							self.stage_row_dn[self.count_dn - 1] = "+"
 						else:
 							self.stage_row_dn[self.count_dn] = " "
 							self.stage_row_dn[self.count_dn - 1] = "#"
@@ -259,20 +284,29 @@ class GameEngine:
 						self.stage_row_dn[3] = "-"
 						self.loc_laser_dn = 3
 
-			# Laser collision detection ----------------------------- a bit borked -----------------------------
+			# Laser collision detection ----------------------------- a bit borked
 			if (self.loc_laser_up != 16):
-				if (self.stage_row_up[self.loc_laser_up + 1] == "#" and self.loc_laser_up < 15):
+				if ((self.stage_row_up[self.loc_laser_up + 1] == "#" or self.stage_row_up[self.loc_laser_up + 1] == "+") and self.loc_laser_up < 15):
 					sound.sfx(self.soundon, "laserhit")
 					self.stage_row_up[self.loc_laser_up + 1] = "*"
 					self.stage_row_up[self.loc_laser_up] = " "
 					self.loc_laser_up = 16
 			elif (self.loc_laser_dn != 16):
-				if (self.stage_row_dn[self.loc_laser_dn + 1] == "#" and self.loc_laser_dn < 15):
+				if ((self.stage_row_dn[self.loc_laser_dn + 1] == "#" or self.stage_row_dn[self.loc_laser_dn + 1] == "#") and self.loc_laser_dn < 15):
 					sound.sfx(self.soundon, "laserhit")
 					self.stage_row_dn[self.loc_laser_dn + 1] = "*"
 					self.stage_row_dn[self.loc_laser_dn] = " "
 					self.loc_laser_dn = 16
 
+			# Ammo collision detection ----------------------------- not ideal
+			if (self.stage_row_up[2] == self.player and self.stage_row_up[3] == "+"):
+				self.ammo += 1
+				self.stage_row_up[3] = " "
+				sound.sfx(self.soundon, "pickup")
+			elif (self.stage_row_dn[2] == self.player and self.stage_row_dn[3] == "+"):
+				self.ammo += 1
+				self.stage_row_dn[3] = " "
+				sound.sfx(self.soundon, "pickup")
 
 			# Calculate the score based on difficulty, level nr, and random numbers
 			if (self.stage_row_up[2] == self.player and self.stage_row_dn[2] == "#"):
@@ -312,8 +346,6 @@ class GameEngine:
 				time.sleep(2)
 				if (int(self.finalscore) > 0):
 					self.score_input(str(self.finalscore))
-				lcd.lcd_display_string("  > New Game    ", 1) # a cop-out
-				lcd.lcd_display_string("    Settings    ", 2) # which i'll fix in post
 				break
 			elif (self.stage_row_dn[2] == self.player and self.stage_row_dn[3] == "#"):
 				self.stage_row_dn[2] = "X"
@@ -341,8 +373,6 @@ class GameEngine:
 				time.sleep(2)
 				if (int(self.finalscore) > 0):
 					self.score_input(str(self.finalscore))
-				lcd.lcd_display_string("  > New Game    ", 1) # a cop-out
-				lcd.lcd_display_string("    Settings    ", 2) # which i'll fix in post
 				break
 
 			# Draw the frame
