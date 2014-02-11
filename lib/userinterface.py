@@ -43,17 +43,13 @@ class UserInterface:
 # - Display the QUIT dialog
 #
 #	A quick and dirty implementation, but it works. Will have to make it a proper function
-#	one day. Also, selecting 'No' and moving back to the parent menu relies on the Quit
-#	option being the last entry in the parent menu, which is not nice at all.
+#	one day.
 #
-	def question_yesno(self,question,default_answer,loc_number,mainmenu, g_set_sounds):
+	def question_yesno(self, question, default_answer, g_set_sounds):
 			lcd.lcd_clear()
 			self.soundon = g_set_sounds
 			self.question = question
 			self.default = default_answer
-			self.loc_number = loc_number
-			self.mainmenu = mainmenu
-			self.loc_empty = "   "
 
 			lcd.lcd_display_string(self.question, 1)
 			if (self.default == "No"):
@@ -76,10 +72,7 @@ class UserInterface:
 				elif (GPIO.input(11)):
 					sound.sfx(self.soundon, "menu_enter")
 					if (self.answer_yesno == 0):
-						# This relies on "Quit" being the last item in the parent menu,
-						# which is not that nice. Will fix in post, eh..
-						lcd.lcd_display_string(self.loc_empty + self.mainmenu[self.loc_number-1], 1)
-						lcd.lcd_display_string(self.mainmenu[0] + self.mainmenu[self.loc_number], 2)
+						# Go back to main menu
 						return
 					elif (self.answer_yesno == 1):
 						lcd.lcd_clear()

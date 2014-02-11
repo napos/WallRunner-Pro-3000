@@ -166,7 +166,7 @@ while True:
 		if (loc_number == 1): # new game
 			engine.run_game(g_set_sounds, g_set_avatar)
 		elif (loc_number == 5): # quit
-			ui.question_yesno("  Really quit?","No",loc_number,mainmenu,g_set_sounds)
+			ui.question_yesno("  Really quit?", "No", g_set_sounds)
 		else:
 			if (loc_number == 2): # settings
 				ui.settings_view(g_set_sounds)
