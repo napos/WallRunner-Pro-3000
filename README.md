@@ -46,6 +46,11 @@ Visit [serenity.ee](http://www.serenity.ee)
 
 ### Changelog
 
+**Version 1.1**
+
+* Ammo pickups
+* New "Impossible" difficulty
+
 **Version 1.0**
 
 * Initial release
