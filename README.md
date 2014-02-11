@@ -29,7 +29,7 @@ After all of those things are hooked up/working, start it with `sudo ./wallrunne
 
 *Note: sudo is required for GPIO to work.*
 
-### System requirements:
+### System requirements
 
 * A Raspberry Pi
 * 16x2 LCD with an I2C backpack
@@ -41,6 +41,14 @@ After all of those things are hooked up/working, start it with `sudo ./wallrunne
 ### Contact
 
 Visit [serenity.ee](http://www.serenity.ee)
+
+---
+
+### Changelog
+
+**Version 1.0**
+
+* Initial release
 
 ---
 
