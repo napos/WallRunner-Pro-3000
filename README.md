@@ -38,10 +38,6 @@ After all of those things are hooked up/working, start it with `sudo ./wallrunne
 * a couple of breadboards
 * some misc wires and stuff
 
-### Contact
-
-Visit [serenity.ee](http://www.serenity.ee)
-
 ---
 
 ### Changelog
